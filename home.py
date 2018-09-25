@@ -19,7 +19,7 @@
 
 # ### Definitions and auxiliar variables
 
-# In[11]:
+# In[1]:
 
 
 import numpy as np
@@ -41,7 +41,7 @@ cities = list(zip(coord_x, coord_y))
 amount_select = 8 # deve ser divisivel por 4
 
 
-# In[12]:
+# In[2]:
 
 
 plt.scatter(coord_x, coord_y)
@@ -117,104 +117,144 @@ def spin_roulette(generation):
     return min(choose,key=lambda x: x[3])
 
 
-# In[22]:
+# In[63]:
 
 
 def crossover(parent_one, parent_two):
+    
+    #Choose the 2 borders randomly
     limits_one = sorted(sample(range(2,len(cities)-1),2))
     limits_two = sorted(sample(range(2,len(cities)-1),2))
     
+    #Get only core of each
     core_one = [x for i, x in enumerate(parent_one) if i >= limits_one[0] and i <= limits_one[1]]
     core_two = [x for i, x in enumerate(parent_two) if i >= limits_two[0] and i <= limits_two[1]]
     
     mount_one = []
-    #aux_one = parent_two.copy()
-    
     mount_two = []
-    #aux_two = parent_one.copy()
     
-    print(limits_one)
-    print(core_one)
-    print(parent_one)
-    
-    #print(limits_two)
-    #print(core_two)
-    #print(parent_two)
     
     i = 0
     aux = 0
     
+    #Algorithm used: OX - Ordered Crossove
+    
+    print("------------------------")
+    print(parent_one)
+    print(parent_two)
+    print("------------------------")
+    
+    # Generate first descedent
     while i < len(parent_one):
         if i < limits_one[0] or i > limits_one[1]:
+            print("N: "+str(i))
             while (parent_two[aux] in core_one):
                 aux += 1
             mount_one.append(parent_two[aux])
+            aux += 1
         else:
             mount_one.append(parent_one[i])
         
         i += 1
-    print(mount_one)
     
-    print('----------------------------------')
+    aux = 0
+    n = 0
+    
+    # Generate second descedent
+    while n < len(parent_two):
+        if n < limits_two[0] or n > limits_two[1]:
+            print("N: "+str(n))
+            while (parent_one[aux] in core_two):
+                aux += 1
+            mount_two.append(parent_one[aux])
+            aux += 1
+        else:
+            mount_two.append(parent_one[n])
+        
+        n += 1
+    return (mount_one, mount_two)
+
+
+# In[9]:
+
+
+def mutation(child):
+    for i in range(1,len(child)-1):
+        if random() >= 0.95:
+            pos = randrange(1, len(child)-1)
+            aux = child[i]
+            child[i] = child[pos]
+            child[pos] = aux
+    return child
             
-    
 
 
-# In[14]:
+# In[10]:
 
 
 def create_new_generation(selecteds):
     i = 0
+    new_generation = []
     while i < len(selecteds):
         parent_one = selecteds[i]
         parent_two = selecteds[i+1]
         
-        ##limits_one = sorted(sample(range(1,len(cities)-1),2))
-        ##limits_two = sorted(sample(range(1,len(cities)-1),2))
+        child_one, child_two = crossover(parent_one, parent_two)
         
-        crossover(parent_one, parent_two)
+        #Mutante
+        child_one = mutation(child_one)
+        child_two = mutation(child_two)
         
-        #print(limits_one)
-        #print(limits_two)
+        new_generation.append(child_one)
+        new_generation.append(child_two)
         
         i += 2
         
+    return new_generation
 
 
-# In[15]:
+# In[38]:
 
+
+
+#selecteds = create_random_paths(cities)
+#roulette = ride_roulette(selecteds)
+#new_selects = [spin_roulette(roulette)[0] for i in range(0, amount_select)]
+#create_new_generation(new_selects)
+
+
+
+# In[64]:
+
+
+population = create_random_paths(cities)
 
 selecteds = create_random_paths(cities)
-cho = ride_roulette(selecteds)
-new_selects = [spin_roulette(cho)[0] for i in range(0, amount_select)]
-#spin_roulette(cho)
+roulette = ride_roulette(selecteds)
+new_selects = [spin_roulette(roulette)[0] for i in range(0, amount_select)]
+test1 =create_new_generation(new_selects)
+
+print("test1")
+for x in test1:
+    print(x)
+
+#population = []
+#print(population)
+
+#for i in range(0,2):
+ #   roulette = ride_roulette(population)
+  #  new_selects = [spin_roulette(roulette)[0] for i in range(0, amount_select)]
+   # print(new_selects)
+    #population = create_new_generation(new_selects)
+    
 
 
-# In[23]:
+# In[65]:
 
 
-create_new_generation(new_selects)
+roulette2 = ride_roulette(test1)
+new_selects2 = [spin_roulette(roulette2)[0] for i in range(0, amount_select)]
+test2 = create_new_generation(new_selects2)
 
-
-# In[17]:
-
-
-new_selects
-
-
-# In[ ]:
-
-
-len(cities)-2
-
-
-# In[ ]:
-
-
-cho
-
-
-# In[ ]:
-
-
-sample(range(0,5), 2)
+print("test2")
+print(new_selects2)
